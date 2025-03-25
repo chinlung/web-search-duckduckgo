@@ -12,6 +12,7 @@ from functools import wraps
 from typing import List, Dict, Any, Optional
 import json
 from cachetools import TTLCache
+from datetime import datetime
 
 # 設定日誌
 logging.basicConfig(
@@ -35,6 +36,8 @@ def load_config() -> Dict[str, Any]:
         "CONTENT_LENGTH_LIMIT": int(os.getenv("CONTENT_LENGTH_LIMIT", "5000")),
         "CACHE_MAX_SIZE": int(os.getenv("CACHE_MAX_SIZE", "100")),
         "CACHE_TTL": int(os.getenv("CACHE_TTL", "3600")),
+        "CACHE_TTL_NEWS": int(os.getenv("CACHE_TTL_NEWS", "900")),  # 15分鐘
+        "CACHE_TTL_DOCS": int(os.getenv("CACHE_TTL_DOCS", "86400")),  # 24小時
         "USE_JINA_API": os.getenv("USE_JINA_API", "True").lower() == "true",
         "JINA_TIMEOUT": float(os.getenv("JINA_TIMEOUT", "15.0")),
         "RAW_HTML_TIMEOUT": float(os.getenv("RAW_HTML_TIMEOUT", "10.0")),
@@ -50,6 +53,7 @@ CONFIG = load_config()
 # 初始化快取
 search_cache = TTLCache(maxsize=CONFIG["CACHE_MAX_SIZE"], ttl=CONFIG["CACHE_TTL"])
 url_cache = TTLCache(maxsize=CONFIG["CACHE_MAX_SIZE"], ttl=CONFIG["CACHE_TTL"])
+search_cache_times = {}
 
 # 初始化並發控制
 request_semaphore = asyncio.Semaphore(int(os.getenv("MAX_CONCURRENT_REQUESTS", "5")))
@@ -322,16 +326,30 @@ async def fetch_url(url: str, content_format: str = "text", max_length: int = CO
 
 async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe_search: bool = True) -> Dict[str, Any]:
     """從 DuckDuckGo 獲取搜尋結果"""
+    from datetime import datetime
+    
+    # 根據查詢類型調整快取時間
+    ttl = CONFIG["CACHE_TTL"]
+    if any(news_term in query.lower() for news_term in ["新聞", "最新", "今日", "news", "latest"]):
+        ttl = CONFIG["CACHE_TTL_NEWS"]
+        logger.info(f"使用新聞快取時間 ({ttl}秒): {query}")
+    elif any(docs_term in query.lower() for docs_term in ["文檔", "教程", "指南", "docs", "tutorial", "guide"]):
+        ttl = CONFIG["CACHE_TTL_DOCS"]
+        logger.info(f"使用文檔快取時間 ({ttl}秒): {query}")
+    
     # 檢查快取
     cache_key = f"{query}:{limit}:{region}:{safe_search}"
     if cache_key in search_cache:
-        logger.info(f"使用快取結果: {query}")
-        cache_stats["hits"] += 1
-        return {
-            "status": "success",
-            "source": "cache",
-            "results": search_cache[cache_key]
-        }
+        # 檢查快取是否過期
+        cache_time = search_cache_times.get(cache_key, datetime.min)
+        if (datetime.now() - cache_time).total_seconds() < ttl:
+            logger.info(f"使用快取結果: {query}")
+            cache_stats["hits"] += 1
+            return {
+                "status": "success",
+                "source": "cache",
+                "results": search_cache[cache_key]
+            }
     
     cache_stats["misses"] += 1
         
@@ -417,6 +435,7 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
                 
                 # 儲存到快取
                 search_cache[cache_key] = results
+                search_cache_times[cache_key] = datetime.now()
                 
                 return {
                     "status": "success",
@@ -970,11 +989,11 @@ async def advanced_search(query: str,
         if len(filtered_results) == 0 and filters:
             suggestions = []
             if "domain" in filters and filters["domain"]:
-                suggestions.append(f"移除域名過濾條件 '{filters["domain"]}'")
+                suggestions.append(f"移除域名過濾條件 '{filters['domain']}'")
             if "keywords" in filters and filters["keywords"]:
-                suggestions.append(f"移除或減少關鍵字過濾條件 {filters["keywords"]}")
+                suggestions.append(f"移除或減少關鍵字過濾條件 {filters['keywords']}")
             if "exclude_keywords" in filters and filters["exclude_keywords"]:
-                suggestions.append(f"移除或減少排除關鍵字條件 {filters["exclude_keywords"]}")
+                suggestions.append(f"移除或減少排除關鍵字條件 {filters['exclude_keywords']}")
             
             return {
                 "status": "success",
