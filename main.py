@@ -966,6 +966,29 @@ async def advanced_search(query: str,
         # 限制結果數量
         filtered_results = filtered_results[:limit]
         
+        # 提供友好的提示，如果過濾後沒有結果
+        if len(filtered_results) == 0 and filters:
+            suggestions = []
+            if "domain" in filters and filters["domain"]:
+                suggestions.append(f"移除域名過濾條件 '{filters["domain"]}'")
+            if "keywords" in filters and filters["keywords"]:
+                suggestions.append(f"移除或減少關鍵字過濾條件 {filters["keywords"]}")
+            if "exclude_keywords" in filters and filters["exclude_keywords"]:
+                suggestions.append(f"移除或減少排除關鍵字條件 {filters["exclude_keywords"]}")
+            
+            return {
+                "status": "success",
+                "query": query,
+                "original_count": len(results),
+                "filtered_count": 0,
+                "results": [],
+                "filters_applied": filters,
+                "sort_by": sort_by,
+                "reverse_sort": reverse_sort,
+                "message": "未找到符合過濾條件的結果",
+                "suggestions": suggestions
+            }
+        
         return {
             "status": "success",
             "query": query,
@@ -1290,7 +1313,7 @@ def health_check():
             import httpx
             async def check_network():
                 async with httpx.AsyncClient() as client:
-                    response = await client.get("https://www.duckduckgo.com", timeout=5.0)
+                    response = await client.get("https://duckduckgo.com/", timeout=5.0, follow_redirects=True)
                     return response.status_code == 200
             
             import asyncio
