@@ -8,3 +8,5 @@ wheels/
 
 # Virtual environments
 .venv
+
+search_app.log
