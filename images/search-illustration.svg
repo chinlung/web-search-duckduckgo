@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="300" viewBox="0 0 500 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="500" height="300" rx="10" fill="#F8F9FA"/>
+  
+  <!-- 搜尋框 -->
+  <rect x="100" y="80" width="300" height="50" rx="25" fill="white" stroke="#4285F4" stroke-width="3"/>
+  <circle cx="130" cy="105" r="15" fill="none" stroke="#4285F4" stroke-width="3"/>
+  <line x1="141" y1="116" x2="150" y2="125" stroke="#4285F4" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- 搜尋結果 -->
+  <rect x="100" y="150" width="300" height="30" rx="5" fill="white" stroke="#DADCE0" stroke-width="1"/>
+  <rect x="110" y="160" width="150" height="10" rx="2" fill="#4285F4" opacity="0.7"/>
+  <rect x="270" y="160" width="50" height="10" rx="2" fill="#34A853" opacity="0.7"/>
+  
+  <rect x="100" y="190" width="300" height="30" rx="5" fill="white" stroke="#DADCE0" stroke-width="1"/>
+  <rect x="110" y="200" width="120" height="10" rx="2" fill="#4285F4" opacity="0.7"/>
+  <rect x="240" y="200" width="70" height="10" rx="2" fill="#34A853" opacity="0.7"/>
+  
+  <rect x="100" y="230" width="300" height="30" rx="5" fill="white" stroke="#DADCE0" stroke-width="1"/>
+  <rect x="110" y="240" width="180" height="10" rx="2" fill="#4285F4" opacity="0.7"/>
+  <rect x="300" y="240" width="40" height="10" rx="2" fill="#34A853" opacity="0.7"/>
+  
+  <!-- 裝飾元素 -->
+  <circle cx="50" cy="50" r="20" fill="#EA4335" opacity="0.2"/>
+  <circle cx="450" cy="250" r="25" fill="#FBBC05" opacity="0.2"/>
+  <circle cx="70" cy="200" r="15" fill="#34A853" opacity="0.2"/>
+  <circle cx="430" cy="70" r="18" fill="#4285F4" opacity="0.2"/>
+  
+  <!-- 放大鏡圖標 -->
+  <g transform="translate(370, 40) scale(0.8)">
+    <circle cx="25" cy="25" r="15" fill="none" stroke="#4285F4" stroke-width="4"/>
+    <line x1="36" y1="36" x2="45" y2="45" stroke="#4285F4" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

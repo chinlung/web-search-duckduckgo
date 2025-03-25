@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DuckDuckGo Web 搜尋工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fa-solid fa-magnifying-glass"></i> DuckDuckGo Web 搜尋工具</h1>
+            <p>強大的網路搜尋與內容獲取工具，基於 DuckDuckGo 搜尋引擎</p>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>增強您的搜尋體驗</h2>
+                <p>使用我們的 MCP 伺服器，輕鬆搜尋網路並獲取內容，支援快取管理、高級搜尋和系統監控功能</p>
+                <div class="buttons">
+                    <a href="#features" class="btn primary">查看功能</a>
+                    <a href="#usage" class="btn secondary">使用方法</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://raw.githubusercontent.com/chinlung/web-search-duckduckgo/main/images/search-illustration.svg" alt="搜尋插圖" onerror="this.src='https://via.placeholder.com/500x300?text=搜尋插圖'">
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>功能特點</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-search"></i></div>
+                    <h3>基本搜尋功能</h3>
+                    <ul>
+                        <li>使用 DuckDuckGo 搜尋網路</li>
+                        <li>提取標題、URL 和摘要</li>
+                        <li>獲取 URL 內容並轉換為 Markdown</li>
+                        <li>並行獲取多個 URL</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
+                    <h3>快取管理功能</h3>
+                    <ul>
+                        <li>提供快取使用情況統計</li>
+                        <li>清除快取資料</li>
+                        <li>智能快取時間設定</li>
+                        <li>根據查詢類型自動調整快取時間</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-sliders"></i></div>
+                    <h3>搜尋功能增強</h3>
+                    <ul>
+                        <li>提供相關查詢建議</li>
+                        <li>自訂搜尋參數</li>
+                        <li>查看當前設定</li>
+                        <li>支援多種搜尋區域</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-filter"></i></div>
+                    <h3>高級搜尋功能</h3>
+                    <ul>
+                        <li>支援過濾和排序</li>
+                        <li>按域名、關鍵字過濾</li>
+                        <li>按標題、日期排序</li>
+                        <li>提供搜尋結果分析和摘要</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <h3>系統監控功能</h3>
+                    <ul>
+                        <li>監控系統資源使用情況</li>
+                        <li>檢查系統組件運行狀態</li>
+                        <li>提供 CPU、記憶體、網路和磁碟使用統計</li>
+                        <li>健康檢查功能</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>開發者友好</h3>
+                    <ul>
+                        <li>MCP 兼容</li>
+                        <li>易於整合</li>
+                        <li>詳細文檔</li>
+                        <li>開源專案</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="usage" class="usage">
+        <div class="container">
+            <h2>使用方法</h2>
+            <div class="usage-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>安裝前置條件</h3>
+                        <p>安裝 Python 3.11 或更高版本，然後使用 Poetry 安裝依賴：</p>
+                        <pre><code>poetry install</code></pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>配置 Claude Desktop</h3>
+                        <p>將伺服器添加到 <code>claude_desktop_config.json</code> 文件中：</p>
+                        <pre><code>{
+    "mcpServers": {
+        "web-search-duckduckgo": {
+            "command": "poetry",
+            "args": [
+                "run",
+                "python",
+                "/path/to/web-search-duckduckgo/main.py"
+            ]
+        }
+    }
+}</code></pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>使用工具</h3>
+                        <p>在 MCP 客戶端（例如 Claude）中使用以下工具：</p>
+                        <ul class="tools-list">
+                            <li><strong>search_and_fetch</strong>：搜尋網路並獲取 URL 內容</li>
+                            <li><strong>search</strong>：僅搜尋網路，不獲取頁面內容</li>
+                            <li><strong>fetch</strong>：獲取特定 URL 的內容</li>
+                            <li><strong>suggest_related_queries</strong>：提供相關查詢建議</li>
+                            <li><strong>get_cache_statistics</strong>：獲取快取統計資訊</li>
+                            <li><strong>clear_cache</strong>：清除所有快取資料</li>
+                            <li><strong>set_search_preferences</strong>：設定搜尋偏好</li>
+                            <li><strong>system_monitor</strong>：監控系統資源使用情況</li>
+                            <li><strong>health_check</strong>：檢查系統各組件是否正常運行</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="system-requirements">
+        <div class="container">
+            <h2>系統需求</h2>
+            <div class="requirements-content">
+                <ul>
+                    <li><strong>Python 3.11+</strong></li>
+                    <li><strong>依賴套件 (透過 Poetry 管理)</strong>：
+                        <ul>
+                            <li>beautifulsoup4</li>
+                            <li>httpx</li>
+                            <li>mcp[cli]</li>
+                            <li>python-dotenv</li>
+                            <li>cachetools</li>
+                            <li>psutil (用於系統監控功能)</li>
+                            <li>requests</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 DuckDuckGo Web 搜尋工具 | 採用 MIT 授權</p>
+            <div class="social-links">
+                <a href="https://github.com/chinlung/web-search-duckduckgo" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
