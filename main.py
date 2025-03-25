@@ -6,13 +6,20 @@ import asyncio
 import logging
 import time
 import re
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlparse, parse_qs, unquote
 import os
 from functools import wraps
 from typing import List, Dict, Any, Optional
 import json
 from cachetools import TTLCache
 from datetime import datetime
+from claude_debug_logger import (
+    log_claude_request, 
+    log_duckduckgo_request, 
+    log_duckduckgo_response, 
+    log_claude_response,
+    save_html_content
+)
 
 # 設定日誌
 logging.basicConfig(
@@ -117,6 +124,30 @@ def format_url_for_display(url: str) -> str:
     except Exception as e:
         logger.debug(f"URL 格式化失敗: {str(e)}")
         return url
+
+# 從 DuckDuckGo 重定向 URL 中提取真實 URL
+def extract_real_url(duckduckgo_url):
+    """從 DuckDuckGo 重定向 URL 中提取真實 URL"""
+    if not duckduckgo_url:
+        return ""
+    
+    # 如果是相對 URL，添加協議
+    if duckduckgo_url.startswith('//'):
+        duckduckgo_url = 'https:' + duckduckgo_url
+    
+    # 解析 URL
+    parsed = urlparse(duckduckgo_url)
+    
+    # 檢查是否是 DuckDuckGo 重定向 URL
+    if 'duckduckgo.com/l/' in duckduckgo_url:
+        # 從查詢參數中提取真實 URL
+        query_params = parse_qs(parsed.query)
+        if 'uddg' in query_params:
+            real_url = unquote(query_params['uddg'][0])
+            return real_url
+    
+    # 如果不是重定向 URL，則返回原始 URL
+    return duckduckgo_url
 
 # 安全地抓取指定 URL 的內容
 async def fetch_url(url: str, content_format: str = "text", max_length: int = CONFIG["CONTENT_LENGTH_LIMIT"]) -> Dict[str, Any]:
@@ -328,6 +359,14 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
     """從 DuckDuckGo 獲取搜尋結果"""
     from datetime import datetime
     
+    # 記錄 Claude 請求
+    request_id = log_claude_request("search_duckduckgo", {
+        "query": query,
+        "limit": limit,
+        "region": region,
+        "safe_search": safe_search
+    })
+    
     # 根據查詢類型調整快取時間
     ttl = CONFIG["CACHE_TTL"]
     if any(news_term in query.lower() for news_term in ["新聞", "最新", "今日", "news", "latest"]):
@@ -345,11 +384,16 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
         if (datetime.now() - cache_time).total_seconds() < ttl:
             logger.info(f"使用快取結果: {query}")
             cache_stats["hits"] += 1
-            return {
+            
+            # 記錄從快取返回的回應
+            response_data = {
                 "status": "success",
                 "source": "cache",
                 "results": search_cache[cache_key]
             }
+            log_claude_response(request_id, response_data)
+            
+            return response_data
     
     cache_stats["misses"] += 1
         
@@ -376,6 +420,9 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
             "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
         }
         
+        # 記錄發送給 DuckDuckGo 的請求
+        log_duckduckgo_request(request_id, url, params, headers)
+        
         # 發送請求
         async with request_semaphore:
             async with httpx.AsyncClient(verify=True) as client:
@@ -387,6 +434,9 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
                     follow_redirects=True
                 )
                 response.raise_for_status()
+                
+                # 保存 HTML 內容以供分析
+                # save_html_content(request_id, query, response.text)
                 
                 # 解析 HTML 回應
                 soup = BeautifulSoup(response.text, "html.parser")
@@ -408,37 +458,43 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
                     snippet_elem = result.select_one('.result__snippet')
                     
                     if title_elem and url_elem:
+                        # 獲取 URL 文本
                         url_text = url_elem.get_text().strip()
+                        
+                        # 獲取實際的 URL（從 href 屬性）
+                        href_url = title_elem.get('href', '')
+                        real_url = extract_real_url(href_url)
+                        
+                        # 如果 real_url 有效，使用它；否則使用 url_text
+                        final_url = real_url if real_url else url_text
+                        
                         # 確保 URL 格式正確
-                        if not url_text.startswith(('http://', 'https://')):
-                            url_text = f"https://{url_text}"
+                        if not final_url.startswith(('http://', 'https://')):
+                            final_url = f"https://{final_url}"
                             
                         # 格式化搜尋結果
                         title = title_elem.get_text().strip()
                         snippet = format_snippet(snippet_elem.get_text().strip() if snippet_elem else "")
-                        display_url = format_url_for_display(url_text)
+                        display_url = format_url_for_display(final_url)
                             
                         result_dict = {
                             "title": title,
-                            "url": url_text,
+                            "url": final_url,
                             "display_url": display_url,
                             "snippet": snippet
                         }
                         results.append(result_dict)
                 
+                # 記錄從 DuckDuckGo 收到的回應
+                log_duckduckgo_response(
+                    request_id, 
+                    response.status_code, 
+                    len(response.text), 
+                    len(results)
+                )
+                
                 # 構建響應
                 response_data = {
-                    "results": results,
-                    "suggestion": suggestion,
-                    "total": len(results),
-                    "query": query
-                }
-                
-                # 儲存到快取
-                search_cache[cache_key] = results
-                search_cache_times[cache_key] = datetime.now()
-                
-                return {
                     "status": "success",
                     "source": "duckduckgo",
                     "results": results,
@@ -446,33 +502,67 @@ async def search_duckduckgo(query: str, limit: int = 5, region: str = "tw", safe
                     "total": len(results)
                 }
                 
+                # 儲存到快取
+                search_cache[cache_key] = results
+                search_cache_times[cache_key] = datetime.now()
+                
+                # 記錄回傳給 Claude 的回應
+                log_claude_response(request_id, response_data)
+                
+                return response_data
+                
     except httpx.TimeoutException:
-        logger.warning(f"搜尋請求超時: {query}")
-        return {
+        error_message = f"搜尋請求超時: {query}"
+        logger.warning(error_message)
+        
+        response_data = {
             "status": "error",
             "message": "搜尋請求超時，請稍後再試",
             "suggestion": "您可以縮短搜尋關鍵字或檢查網路連線",
             "error_type": "timeout"
         }
+        
+        # 記錄錯誤
+        log_duckduckgo_response(request_id, 0, 0, 0, error=error_message)
+        log_claude_response(request_id, response_data)
+        
+        return response_data
+        
     except httpx.HTTPStatusError as e:
-        logger.error(f"搜尋 HTTP 錯誤 {e.response.status_code}: {query}")
-        return {
+        error_message = f"搜尋 HTTP 錯誤 {e.response.status_code}: {query}"
+        logger.error(error_message)
+        
+        response_data = {
             "status": "error",
             "message": "搜尋服務暫時無法使用",
             "suggestion": "請稍後再試，或使用較簡單的搜尋關鍵字",
             "error_type": "http",
             "code": e.response.status_code
         }
+        
+        # 記錄錯誤
+        log_duckduckgo_response(request_id, e.response.status_code, 0, 0, error=error_message)
+        log_claude_response(request_id, response_data)
+        
+        return response_data
+        
     except Exception as e:
-        logger.error(f"搜尋失敗: {str(e)}")
-        return {
+        error_message = f"搜尋失敗: {str(e)}"
+        logger.error(error_message)
+        
+        response_data = {
             "status": "error",
             "message": "搜尋過程發生錯誤",
             "suggestion": "請嘗試使用不同的關鍵字",
             "error_type": "general"
         }
+        
+        # 記錄錯誤
+        log_duckduckgo_response(request_id, 0, 0, 0, error=error_message)
+        log_claude_response(request_id, response_data)
+        
+        return response_data
 
-# MCP 工具函數
 @mcp.tool()
 async def search_and_fetch(query: str, limit: int = 3, content_format: str = "text", region: str = "tw"):
     """

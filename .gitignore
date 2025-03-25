@@ -10,3 +10,5 @@ wheels/
 .venv
 
 search_app.log
+
+debug_logs/
