@@ -19,7 +19,7 @@
         <div class="container">
             <div class="hero-content">
                 <h2>增強您的搜尋體驗</h2>
-                <p>使用我們的 MCP 伺服器，輕鬆搜尋網路並獲取內容，支援快取管理、高級搜尋和系統監控功能</p>
+                <p>使用我們的 MCP 伺服器，輕鬆搜尋網路並獲取內容，支援快取管理和高級搜尋功能</p>
                 <div class="buttons">
                     <a href="#features" class="btn primary">查看功能</a>
                     <a href="#usage" class="btn secondary">使用方法</a>
@@ -47,7 +47,7 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
-                    <h3>快取管理功能</h3>
+                    <h3>快取管理功能 <span class="feature-note">(需自行設定開啟)</span></h3>
                     <ul>
                         <li>提供快取使用情況統計</li>
                         <li>清除快取資料</li>
@@ -57,10 +57,10 @@
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fa-solid fa-sliders"></i></div>
-                    <h3>搜尋功能增強</h3>
+                    <h3>搜尋功能增強 <span class="feature-note">(部分需自行設定開啟)</span></h3>
                     <ul>
-                        <li>提供相關查詢建議</li>
-                        <li>自訂搜尋參數</li>
+                        <li>提供相關查詢建議 <span class="feature-note">(需自行設定開啟)</span></li>
+                        <li>自訂搜尋參數 <span class="feature-note">(需自行設定開啟)</span></li>
                         <li>查看當前設定</li>
                         <li>支援多種搜尋區域</li>
                     </ul>
@@ -73,16 +73,6 @@
                         <li>按域名、關鍵字過濾</li>
                         <li>按標題、日期排序</li>
                         <li>提供搜尋結果分析和摘要</li>
-                    </ul>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
-                    <h3>系統監控功能</h3>
-                    <ul>
-                        <li>監控系統資源使用情況</li>
-                        <li>檢查系統組件運行狀態</li>
-                        <li>提供 CPU、記憶體、網路和磁碟使用統計</li>
-                        <li>健康檢查功能</li>
                     </ul>
                 </div>
                 <div class="feature-card">
@@ -139,13 +129,14 @@
                             <li><strong>search_and_fetch</strong>：搜尋網路並獲取 URL 內容</li>
                             <li><strong>search</strong>：僅搜尋網路，不獲取頁面內容</li>
                             <li><strong>fetch</strong>：獲取特定 URL 的內容</li>
-                            <li><strong>suggest_related_queries</strong>：提供相關查詢建議</li>
-                            <li><strong>get_cache_statistics</strong>：獲取快取統計資訊</li>
-                            <li><strong>clear_cache</strong>：清除所有快取資料</li>
-                            <li><strong>set_search_preferences</strong>：設定搜尋偏好</li>
-                            <li><strong>system_monitor</strong>：監控系統資源使用情況</li>
-                            <li><strong>health_check</strong>：檢查系統各組件是否正常運行</li>
+                            <li><strong>suggest_related_queries</strong> <span class="feature-note">(需自行設定開啟)</span>：提供相關查詢建議</li>
+                            <li><strong>get_cache_statistics</strong> <span class="feature-note">(需自行設定開啟)</span>：獲取快取統計資訊</li>
+                            <li><strong>clear_cache</strong> <span class="feature-note">(需自行設定開啟)</span>：清除所有快取資料</li>
+                            <li><strong>set_search_preferences</strong> <span class="feature-note">(需自行設定開啟)</span>：設定搜尋偏好</li>
                         </ul>
+                        <div class="note-box">
+                            <p><strong>注意</strong>：標記為「需自行設定開啟」的功能在 main.py 中已經實現但被註釋掉，需要您手動取消註釋才能使用。</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,7 +156,6 @@
                             <li>mcp[cli]</li>
                             <li>python-dotenv</li>
                             <li>cachetools</li>
-                            <li>psutil (用於系統監控功能)</li>
                             <li>requests</li>
                         </ul>
                     </li>
