@@ -1,5 +1,11 @@
 # DuckDuckGo Web 搜尋工具
 
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Poetry](https://img.shields.io/badge/Poetry-1.6.0%2B-teal.svg)](https://python-poetry.org/)
+[![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://github.com/anthropics/anthropic-tools)
+[![Status: Active](https://img.shields.io/badge/Status-Active-success.svg)](https://github.com/chinlung/web-search-duckduckgo)
+
 這個專案提供一個 MCP (Model Context Protocol) 伺服器，允許你使用 DuckDuckGo 搜尋引擎搜尋網路，並可選擇性地獲取和摘要找到的 URL 內容。
 
 ## 功能特點
